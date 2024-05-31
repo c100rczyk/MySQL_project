@@ -3,7 +3,7 @@ from config import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 from login_process import LoginProcess
 import sys
 from connect_mysql import ConnectMySQL
-from Aplikacja_PyQt import AplikacjaTreningowa
+from logowanie_PyQt import AplikacjaTreningowa
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette, QColor, QPixmap
@@ -18,6 +18,9 @@ def handle_login():
 
     login_to = LoginProcess(mycoursor)
     login_to.login_to_app(input_login, input_password)
+
+#def handle_register():
+
 
 if __name__ == "__main__":
 
