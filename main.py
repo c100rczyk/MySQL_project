@@ -1,72 +1,64 @@
-
-from config import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
-from login_process import LoginProcess
 import sys
-from connect_mysql import ConnectMySQL
-from logowanie_PyQt import AplikacjaTreningowa
+from PyQt5.QtWidgets import QApplication, QStackedWidget
+from login_screen import LoginScreen
+from register_screen import RegisterScreen
+from main_screen import MainScreen
+from AddTraining_Screen import AddTrainingScreen
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette, QColor, QPixmap
-from PyQt5.QtWidgets import (QWidget, QLabel, QPushButton, QApplication, QVBoxLayout, QFrame, QHBoxLayout,
-                              QLineEdit, QGridLayout)
+class App(QApplication):
+    def __init__(self, sys_argv):
+        super().__init__(sys_argv)
+        self.stack = QStackedWidget()       # tworzenie stosu widgetów
 
+        self.login_screen = LoginScreen()
+        self.login_screen.login_successful.connect(self.show_main_screen)
+        #self.login_screen.register_button.clicked.connect(self.show_register_screen)
+        self.login_screen.show_register_signal.connect(self.show_register_screen)
 
+        self.register_screen = RegisterScreen()
+        self.register_screen.registration_successful.connect(self.show_login_screen)
+        self.register_screen.back_to_login.connect(self.show_login_screen)
 
-def handle_login():
-    input_login = app1.get_putted_login()
-    input_password = app1.get_putted_password()
+        self.main_screen = None
 
-    login_to = LoginProcess(mycoursor)
-    login_to.login_to_app(input_login, input_password)
-
-#def handle_register():
-
-
-if __name__ == "__main__":
-
-    # Łączenie z bazą danych
-    mydb_connect = ConnectMySQL(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME)
-    mydb = mydb_connect.connect()
-
-    # Uruchomienie aplikacji
-    app = QApplication(sys.argv)
-    app1 = AplikacjaTreningowa(handle_login)
-
-    #Porusznie się po Bazie danych
-    mycoursor = mydb.cursor()
-    print(f"mycoursor {mycoursor}")
+        #TESTY
+        self.training_screen = AddTrainingScreen()
+        self.training_screen.show_trening_signal.connect(self.show_training_screen)
+        self.training_screen.back_to_login2.connect(self.show_main_screen)
 
 
+        self.stack.addWidget(self.login_screen)
+        self.stack.addWidget(self.register_screen)
+        self.stack.setFixedSize(800, 600)
+        self.stack.show()
+
+    def show_main_screen(self, username):
+        self.main_screen = MainScreen(username)
+        self.main_screen.logout_signal.connect(self.show_login_screen)
+        self.main_screen.show_trening_signal.connect(self.show_training_screen)         #########
+
+        self.stack.addWidget(self.main_screen)
+        self.stack.setCurrentWidget(self.main_screen)
+
+    def show_training_screen(self):
+        #self.traning_screen = AddTrainingScreen()
+        self.stack.addWidget(self.training_screen)
+        self.stack.setCurrentWidget(self.training_screen)
+
+    def show_login_screen(self):
+        self.login_screen.clear_inputs()
+        self.stack.setCurrentWidget(self.login_screen)
+        if self.main_screen:
+            self.stack.removeWidget(self.main_screen)
+            self.main_screen = None
+
+    def show_register_screen(self):
+        self.register_screen.clear_inputs()
+        self.stack.setCurrentWidget(self.register_screen)
+
+    # def add_training_to_plan(self):
+
+
+if __name__ == '__main__':
+    app = App(sys.argv)
     sys.exit(app.exec_())
-
-
-
-
-
-
-
-
-
-
-
-# SHOW ALL DATABASES
-# mycoursor.execute("SHOW DATABASES")
-#
-# for i in mycoursor:
-#     print(i)
-
-# DODANIE UZYTKOWNIKA DO BAZY DANYCH
-# sql = "INSERT INTO uzytkownik (login, haslo, rodzaj_konta) VALUES (%s, %s, %s)"
-# val = ("InnyFilip", "bim222", 0)
-# mycoursor.execute(sql,val)
-# mydb.commit()
-# print(mycoursor.rowcount, "record inserted.")
-
-# WYBRANIE DANYCH Z TABELI
-
-
-#TODO
-#czekać na naciśnięcie przycisku zaloguj sie
-#pobrać dane z pola tekstowego haslo
-#sprawdzic haslo z tym z bazy danych
-#podjąc decyzję o logowaniu
